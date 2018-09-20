@@ -89,44 +89,74 @@ Resources:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Join ['', [!Ref 'AWS::StackName', -ecs-demo-app]]
-      ContainerDefinitions:
-      - Name: simple-app
-        Cpu: '10'
-        Essential: 'true'
-        Image: httpd:2.4
-        Memory: '300'
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-group: !Ref 'CloudwatchLogsGroup'
-            awslogs-region: !Ref 'AWS::Region'
-            awslogs-stream-prefix: ecs-demo-app
-        MountPoints:
-        - ContainerPath: /usr/local/apache2/htdocs
-          SourceVolume: my-vol
-        PortMappings:
-        - ContainerPort: 80
-      - Name: busybox
-        Cpu: 10
-        Command: ['/bin/sh -c "while true; do echo ''<html> <head> <title>Amazon ECS
-            Sample App</title> <style>body {margin-top: 40px; background-color: #333;}
-            </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon
-            ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now
-            running on a container in Amazon ECS.</p>'' > top; /bin/date > date ;
-            echo ''</div></body></html>'' > bottom; cat top date bottom > /usr/local/apache2/htdocs/index.html
-            ; sleep 1; done"']
-        EntryPoint: [sh, -c]
-        Essential: false
-        Image: busybox
-        Memory: 200
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-group: !Ref 'CloudwatchLogsGroup'
-            awslogs-region: !Ref 'AWS::Region'
-            awslogs-stream-prefix: ecs-demo-app
-        VolumesFrom:
-        - SourceContainer: simple-app
+      containerDefinitions:
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongo_data
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongo_seed_info
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongo_seed_links
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongo_seed_team
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongo_seed_team_images
+      - essential: true
+        image: build
+        links:
+        - mongodb
+        memory: 4
+        name: mongod
+      - essential: true
+        image: amd64/mongo
+        memory: 4
+        name: mongodb
+        portMappings:
+        - containerPort: 27017
+          hostPort: 27017
+      - environment:
+        - name: MONGO_URI
+          value: mongodb://mongodb/agora
+        essential: true
+        image: build
+        memory: 4
+        name: agora
+      - essential: true
+        image: build
+        memory: 4
+        mountPoints:
+        - containerPath: "/snippets"
+          sourceVolume: _ConfigSnippets
+        name: nginx
+        portMappings:
+        - containerPort: 80
+          hostPort: 80
+        - containerPort: 443
+          hostPort: 443
+      family: ''
+      volumes:
+      - host:
+          sourcePath: "./config/snippets"
+        name: _ConfigSnippets
       Volumes:
       - Name: my-vol
   ECSALB:
