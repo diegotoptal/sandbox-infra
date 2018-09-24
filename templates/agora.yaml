@@ -90,75 +90,56 @@ Resources:
     Properties:
       Family: !Join ['', [!Ref 'AWS::StackName', -ecs-demo-app]]
       containerDefinitions:
-      - essential: true
-        image: build
+      - name: mongo_data
         links:
         - mongodb
-        memory: 4
-        name: mongo_data
-      - essential: true
-        image: build
+        memory: 50
+      - name: mongo_seed_info
         links:
         - mongodb
-        memory: 4
-        name: mongo_seed_info
-      - essential: true
-        image: build
+        memory: 50
+      - name: mongo_seed_links
         links:
         - mongodb
-        memory: 4
-        name: mongo_seed_links
-      - essential: true
-        image: build
+        memory: 80
+      - name: mongo_seed_team
         links:
         - mongodb
-        memory: 4
-        name: mongo_seed_team
-      - essential: true
-        image: build
+        memory: 50
+      - name: mongo_seed_team_images
         links:
         - mongodb
-        memory: 4
-        name: mongo_seed_team_images
-      - essential: true
-        image: build
+        memory: 100
+      - name: mongod
         links:
         - mongodb
-        memory: 4
-        name: mongod
-      - essential: true
+        memory: 50
+      - name: mongodb
         image: amd64/mongo
-        memory: 4
-        name: mongodb
+        memory: 4000
         portMappings:
         - containerPort: 27017
           hostPort: 27017
-      - environment:
+      - name: agora
+        environment:
         - name: MONGO_URI
           value: mongodb://mongodb/agora
-        essential: true
-        image: build
-        memory: 4
-        name: agora
-      - essential: true
-        image: build
-        memory: 4
+        memory: 6000
+      - name: nginx
+        memory: 2000
         mountPoints:
         - containerPath: "/snippets"
           sourceVolume: _ConfigSnippets
-        name: nginx
         portMappings:
         - containerPort: 80
           hostPort: 80
         - containerPort: 443
           hostPort: 443
       family: ''
-      volumes:
+    Volumes:
       - host:
-          sourcePath: "./config/snippets"
-        name: _ConfigSnippets
-      Volumes:
-      - Name: my-vol
+        sourcePath: "./config/snippets"
+      name: _ConfigSnippets
   ECSALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
